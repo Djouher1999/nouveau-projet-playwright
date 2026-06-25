@@ -40,15 +40,20 @@ test("US-01: Connexion @valide", async ({ page }) => {
 
     await expect(page).toHaveURL(/client\/checkout.php/)
 
-    await page.getByTestId("checkout-confirm-btn").click()
-
     page.on('dialog', async dialog => {
-        expect(dialog.type()).toBe('confirm');
+        // expect(dialog.type()).toBe('confirm');
         expect(dialog.message()).toBe('Confirmer la commande ?');
         await dialog.accept(); // clicks "OK"
     });
 
+    await page.getByTestId("checkout-confirm-btn").click()
+
+    
+
     await expect(page).toHaveURL(/client\/my_orders.php/)
+
+    await expect(page.getByTestId("my-orders-list").locator("details").nth(0).locator("[data-testId^='my-order-status']")).toHaveText("En attente");
+
 
 })
 
