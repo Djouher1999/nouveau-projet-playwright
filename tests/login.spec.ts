@@ -1,6 +1,4 @@
-import { expect, test } from '@playwright/test'
-
-
+import { expect, test, Page } from '@playwright/test'
 
 test("US-01: Connexion @valide", async ({ page }) => {
     // Visiter la 1ère page ...
@@ -26,14 +24,35 @@ test("US-01: Connexion @valide", async ({ page }) => {
     console.log(p2)
 
     await page.getByTestId("add-to-cart-qty-" + p1.index).fill(p1.qte.toString())
-    await page.getByTestId("add-to-cart-qty-" + p2.index).fill(p2.qte.toString())
     await page.getByTestId("add-to-cart-btn-" + p1.index).click()
+
+    await page.getByTestId("add-to-cart-qty-" + p2.index).fill(p2.qte.toString())
     await page.getByTestId("add-to-cart-btn-" + p2.index).click()
 
     expect(await page.locator("#nav-cart-badge")).toHaveText((p1.qte + p2.qte).toString())
+
+
+    await page.locator("#nav-cart").click()
+
+    await expect(page).toHaveURL(/client\/cart.php/)
+
+    await page.getByTestId("cart-checkout-link").click()
+
+    await expect(page).toHaveURL(/client\/checkout.php/)
+
+    await page.getByTestId("checkout-confirm-btn").click()
+
+    page.on('dialog', async dialog => {
+        expect(dialog.type()).toBe('confirm');
+        expect(dialog.message()).toBe('Confirmer la commande ?');
+        await dialog.accept(); // clicks "OK"
+    });
+
+    await expect(page).toHaveURL(/client\/my_orders.php/)
+
 })
 
-let fn = async (page, elements) => {
+let fn = async (page: Page, elements: any) => {
     let index = Math.floor(Math.random() * elements) + 1
     let qte1 = Math.floor(Math.random() * 9) + 1
 
